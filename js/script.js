@@ -2,6 +2,8 @@
 const profile = document.querySelector(".overview");
 const username = "lizz-e";
 const repoList = document.querySelector(".repo-list");
+const repoSection = document.querySelector(".repos");
+const repoDataSection = document.querySelector(".repo-data");
 
 //// fetch API JSON data ////
 // fetch github profile data
@@ -63,4 +65,58 @@ const displayRepos = function (repos) {
         repoList.append(repoItem);
     };
     // add displayRepos() at getRepos()
+};
+
+// add click event when clicking on a repo in the repolist section
+repoList.addEventListener("click", function (e) {
+    if (e.target.matches("h3")) {
+        const repoName = e.target.innerText;
+        // console.log(repoName);
+        getRepoInfo(repoName);
+    }
+});
+
+// create function to get specific repo info
+const getRepoInfo = async function (repoName) {
+    const getInfo = await fetch(`https://api.github.com/repos/${username}/${repoName}`);
+    const repoInfo = await getInfo.json();
+    console.log(repoInfo);
+
+    // create array of languages
+    // get languages
+    const fetchLanguages = await fetch(repoInfo.languages_url);
+    const languageData = await fetchLanguages.json();
+    // console.log(languageData);
+
+    const languages = [];
+    for (const language in languageData) {
+        // push language into the array
+        languages.push(language); 
+    };
+    // console.log(languages);
+
+    displayRepoInfo(repoInfo, languages);
+};
+
+// create function to display specific repo info
+const displayRepoInfo = function (repoInfo, languages) {
+    // create div element to put the data in the html
+    const singleRepoInfo = document.createElement("div");
+    // repoInfo was the object retrieved
+    singleRepoInfo.innerHTML = 
+    `<h3>Name: ${repoInfo.name}</h3>
+    <p>Description: ${repoInfo.description}</p>
+    <p>Default Branch: ${repoInfo.default_branch}</p>
+    <p>Languages: ${languages.join(", ")}</p>
+    <a class="visit" href="${repoInfo.html_url}" target="_blank" rel="noreferrer noopener">
+    View Repo on GitHub!</a>`;
+
+    // empty html section
+    repoDataSection.innerHTML = "";
+    // append to repo data section
+    repoDataSection.append(singleRepoInfo);
+    // show repo data
+    repoDataSection.classList.remove("hide");
+    // hide repo section
+    repoSection.classList.add("hide");
 };
